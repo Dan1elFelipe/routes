@@ -6,12 +6,16 @@ import { AppDos } from './pages/Video'
 import { Musica } from './pages/Musica'
 
 import {ProtectedRoute} from "./components/Protect";
+import { createConnection } from './pages/chat';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+const serverUrl = 'https://localhost:1234';
 
 export const App = () => {
-
-  const [user, setUser] = useState(null)
+  const [roomId, setRoomId] = useState('general');
+  const [user, setUser] = useState(null);
+  const [connection, setConnection] = useState(null);
 
   const login = () => {
     setUser({
@@ -19,10 +23,31 @@ export const App = () => {
       name: "Jhon",
       permissions: ['analize'],
       roles: ['']
-    })
-  }
+    });
 
-  const logout = () => setUser(null)
+    // Crear conexión al servidor de chat al iniciar sesión
+    const newConnection = createConnection(serverUrl, roomId);
+    setConnection(newConnection);
+    newConnection.connect();
+  };
+
+  const logout = () => {
+    // Desconectar del servidor de chat al cerrar sesión
+    if (connection) {
+      connection.disconnect();
+      setConnection(null);
+    }
+
+    setUser(null);
+  };
+
+  useEffect(() => {
+    if (user) {
+      console.log('🔒 Usuario ' + user.name + ' ha iniciado sesión.');
+    } else {
+      console.log('🔓 Usuario ha cerrado sesión.');
+    }
+  }, [user]);
 
   return(
     <BrowserRouter>
